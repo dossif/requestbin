@@ -66,11 +66,11 @@ func main() {
 		Log:       log,
 	}
 	config.Service = service
-	log.Infof("listen: %v", service.Listen)
-	log.Infof("loglevel: %v", logLevel)
+	fmt.Println(fmt.Sprintf("listen: %v", service.Listen))
+	fmt.Println(fmt.Sprintf("loglevel: %v", logLevel))
 	go server.Server(osSignalChan)
 	waitGroup.Add(1)
 	waitGroup.Wait()
-	log.Info("stop main")
+	log.Info("stop app")
 	os.Exit(0)
 }

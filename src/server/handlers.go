@@ -85,3 +85,17 @@ func (s *handler) handlerMethodNotAllowed(w http.ResponseWriter, r *http.Request
 	log.Warn(errMsg)
 	jsonError(w, errMsg, 405)
 }
+
+// Return json-formatted HTTP error
+func jsonError(w http.ResponseWriter, err string, code int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	resp := struct {
+		Code  int    `json:"code"`
+		Error string `json:"error"`
+	}{
+		Code:  code,
+		Error: err,
+	}
+	_ = json.NewEncoder(w).Encode(resp)
+}

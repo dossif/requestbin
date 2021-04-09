@@ -24,8 +24,8 @@ type handler struct {
 func Server(osSignalChan chan bool) {
 	service := config.Service
 	defer service.WaitGroup.Done()
-	log := service.Log.WithField("service", "rest")
-	log.Infof("start service")
+	log := service.Log
+	log.Infof("start http")
 	mw := middleware{Service: service}
 	h := handler{Service: service}
 	// common router
@@ -46,14 +46,13 @@ func Server(osSignalChan chan bool) {
 		_ = server.ListenAndServe()
 	}()
 	<-osSignalChan
-	log.Infof("stop service")
 	ctx, cancel := context.WithTimeout(context.Background(), exitTimeout)
 	defer cancel()
 	err := server.Shutdown(ctx)
 	if err != nil {
-		log.Errorf("failed to shutdown server")
+		log.Errorf("failed to shutdown http server")
 	}
-	defer log.Infof("stop service")
+	defer log.Infof("stop http")
 }
 
 // For common requests
