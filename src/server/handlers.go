@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -17,7 +18,25 @@ func splitAddrPort(host string) (addr string, port int) {
 }
 
 // App index page
-func (s *handler) handlerIndex(w http.ResponseWriter, r *http.Request) {
+func (s *handler) handlerRequestStatus(w http.ResponseWriter, r *http.Request) {
+	log := s.Service.Log
+	httpStatus, _ := mux.Vars(r)["status"]
+	if httpStatus == "" {
+		httpStatus = "200"
+	}
+	httpStatusInt, err := strconv.Atoi(httpStatus)
+	if err != nil {
+		errMsg := fmt.Sprintf("http status %v not int", httpStatus)
+		log.Errorf(errMsg)
+		jsonError(w, errMsg, 599)
+		return
+	}
+	if httpStatusInt < 200 || httpStatusInt >= 600 {
+		errMsg := fmt.Sprintf("invalid http status %v", httpStatus)
+		log.Errorf(errMsg)
+		jsonError(w, errMsg, 599)
+		return
+	}
 	body, _ := ioutil.ReadAll(r.Body)
 	dstHost, dstPort := splitAddrPort(r.Host)
 	rmIp, rmPort := splitAddrPort(r.RemoteAddr)
@@ -29,6 +48,7 @@ func (s *handler) handlerIndex(w http.ResponseWriter, r *http.Request) {
 		Method  string
 		Body    string
 		Headers http.Header
+		Status  int
 	}{
 		RmIp:    rmIp,
 		RmPort:  rmPort,
@@ -37,12 +57,13 @@ func (s *handler) handlerIndex(w http.ResponseWriter, r *http.Request) {
 		Method:  r.Method,
 		Body:    string(body),
 		Headers: r.Header,
+		Status:  httpStatusInt,
 	}
 	resp, err := json.MarshalIndent(respJson, "", "  ")
 	if err != nil {
 		fmt.Println("failed to marshal json")
 	}
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(httpStatusInt)
 	_, err = w.Write(resp)
 	if err != nil {
 		fmt.Println("error index page")
@@ -51,7 +72,7 @@ func (s *handler) handlerIndex(w http.ResponseWriter, r *http.Request) {
 
 // Error 404 handler
 func (s *handler) handlerNotFound(w http.ResponseWriter, r *http.Request) {
-	log := s.Service.Log.WithField("service", "rest")
+	log := s.Service.Log
 	errMsg := fmt.Sprintf("failed to get resource: %v", r.RequestURI)
 	log.Warn(errMsg)
 	jsonError(w, errMsg, 404)

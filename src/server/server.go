@@ -31,7 +31,8 @@ func Server(osSignalChan chan bool) {
 	// common router
 	router := mux.NewRouter()
 	router.Use(mw.commonMiddleware)
-	router.HandleFunc("/", h.handlerIndex)
+	router.HandleFunc("/", h.handlerRequestStatus)
+	router.HandleFunc("/status/{status}", h.handlerRequestStatus)
 	http.Handle("/", router)
 	// create http server
 	server := &http.Server{
