@@ -2,7 +2,7 @@
 
 Build:
 
-    env GOOS=linux GOARCH=amd64 go build -o requestbin src/main/main.go
+    go build -o requestbin src/main/main.go
 
 Docker compose:
 
