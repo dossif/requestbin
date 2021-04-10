@@ -2,7 +2,11 @@
 
 Build:
 
-    env GOOS=linux GOARCH=amd64 go build -o requestbin src/main/main.go
+    go build -o requestbin src/main/main.go
+
+Run:
+
+    env RB_LISTEN="localhost:8080" ./requestbin
 
 Docker compose:
 
