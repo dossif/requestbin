@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+// Split full-address to address and port
 func splitAddrPort(host string) (addr string, port int) {
 	lastInd := strings.LastIndex(host, ":")
 	addr = host[:lastInd]
@@ -17,7 +18,7 @@ func splitAddrPort(host string) (addr string, port int) {
 	return
 }
 
-// App index page
+// Request Status Handler
 func (s *handler) handlerRequestStatus(w http.ResponseWriter, r *http.Request) {
 	log := s.Service.Log
 	httpStatus, _ := mux.Vars(r)["status"]
@@ -37,37 +38,47 @@ func (s *handler) handlerRequestStatus(w http.ResponseWriter, r *http.Request) {
 		jsonError(w, errMsg, 599)
 		return
 	}
+	w.WriteHeader(httpStatusInt)
 	body, _ := ioutil.ReadAll(r.Body)
 	dstHost, dstPort := splitAddrPort(r.Host)
 	rmIp, rmPort := splitAddrPort(r.RemoteAddr)
-	respJson := struct {
-		RmIp    string
-		RmPort  int
-		DstHost string
-		DstPort int
+
+	type Request struct {
+		Ip      string
+		Port    int
 		Method  string
 		Body    string
 		Headers http.Header
+	}
+	type Response struct {
 		Status  int
-	}{
-		RmIp:    rmIp,
-		RmPort:  rmPort,
-		DstHost: dstHost,
-		DstPort: dstPort,
-		Method:  r.Method,
-		Body:    string(body),
-		Headers: r.Header,
-		Status:  httpStatusInt,
+		Headers http.Header
 	}
-	resp, err := json.MarshalIndent(respJson, "", "  ")
-	if err != nil {
-		fmt.Println("failed to marshal json")
+	type RequestStatus struct {
+		Request  Request
+		Response Response
+		Host     string
+		Port     int
+		Proto    string
 	}
-	w.WriteHeader(httpStatusInt)
-	_, err = w.Write(resp)
-	if err != nil {
-		fmt.Println("error index page")
+	respJson := RequestStatus{
+		Request: Request{
+			Method:  r.Method,
+			Ip:      rmIp,
+			Port:    rmPort,
+			Body:    string(body),
+			Headers: r.Header,
+		},
+		Response: Response{
+			Status:  httpStatusInt,
+			Headers: w.Header(),
+		},
+		Host:  dstHost,
+		Port:  dstPort,
+		Proto: r.Proto,
 	}
+	resp, _ := json.MarshalIndent(respJson, "", "  ")
+	_, _ = w.Write(resp)
 }
 
 // Error 404 handler
@@ -86,9 +97,8 @@ func (s *handler) handlerMethodNotAllowed(w http.ResponseWriter, r *http.Request
 	jsonError(w, errMsg, 405)
 }
 
-// Return json-formatted HTTP error
+// Json-formatted error handler
 func jsonError(w http.ResponseWriter, err string, code int) {
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	resp := struct {
 		Code  int    `json:"code"`

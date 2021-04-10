@@ -26,22 +26,13 @@ func setOsSignalHandler(log *logrus.Entry, osSignalChan chan bool) {
 }
 
 // Initiate logging system
-func initLogger(logLevel string) *logrus.Logger {
+func initLogger() *logrus.Logger {
 	logger := logrus.New()
 	logger.SetFormatter(&logrus.JSONFormatter{FieldMap: logrus.FieldMap{logrus.FieldKeyTime: "timestamp",
 		logrus.FieldKeyLevel: "level",
 		logrus.FieldKeyMsg:   "message"}})
 	logger.SetReportCaller(false)
-	switch logLevel {
-	case "DEBUG":
-		logger.SetLevel(logrus.DebugLevel)
-	case "INFO":
-		logger.SetLevel(logrus.InfoLevel)
-	case "ERROR":
-		logger.SetLevel(logrus.ErrorLevel)
-	default:
-		panic(fmt.Sprintf("log level %v is not (DEBUG|INFO|ERROR)", logLevel))
-	}
+	logger.SetLevel(logrus.InfoLevel)
 	return logger
 }
 
@@ -52,11 +43,7 @@ func main() {
 	if ok != true {
 		listen = "0.0.0.0:8080"
 	}
-	logLevel, ok := os.LookupEnv("RB_LOGLEVEL")
-	if ok != true {
-		logLevel = "ERROR"
-	}
-	log := initLogger(logLevel).WithField("app", strings.ToLower(appLogo))
+	log := initLogger().WithField("app", strings.ToLower(appLogo))
 	osSignalChan := make(chan bool)
 	setOsSignalHandler(log, osSignalChan)
 	var waitGroup sync.WaitGroup
@@ -67,7 +54,6 @@ func main() {
 	}
 	config.Service = service
 	fmt.Println(fmt.Sprintf("listen: %v", service.Listen))
-	fmt.Println(fmt.Sprintf("loglevel: %v", logLevel))
 	go server.Server(osSignalChan)
 	waitGroup.Add(1)
 	waitGroup.Wait()

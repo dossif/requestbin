@@ -21,6 +21,7 @@ type handler struct {
 	Service config.Config
 }
 
+// Http Server
 func Server(osSignalChan chan bool) {
 	service := config.Service
 	defer service.WaitGroup.Done()
@@ -28,13 +29,11 @@ func Server(osSignalChan chan bool) {
 	log.Infof("start http")
 	mw := middleware{Service: service}
 	h := handler{Service: service}
-	// common router
 	router := mux.NewRouter()
 	router.Use(mw.commonMiddleware)
 	router.HandleFunc("/", h.handlerRequestStatus)
-	router.HandleFunc("/status/{status}", h.handlerRequestStatus)
+	router.HandleFunc("/{status}", h.handlerRequestStatus)
 	http.Handle("/", router)
-	// create http server
 	server := &http.Server{
 		Addr:         service.Listen,
 		WriteTimeout: time.Second * 5,
@@ -60,7 +59,7 @@ func (s *middleware) commonMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		log := s.Service.Log
-		logFields := logrus.Fields{"remote": r.RemoteAddr, "method": r.Method, "uri": r.RequestURI, "service": "rest"}
+		logFields := logrus.Fields{"remote": r.RemoteAddr, "method": r.Method, "uri": r.RequestURI, "host": r.Host}
 		log.WithFields(logFields).Info("http-request")
 		next.ServeHTTP(w, r)
 	})
