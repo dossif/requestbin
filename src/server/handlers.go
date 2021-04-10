@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -108,4 +109,12 @@ func jsonError(w http.ResponseWriter, err string, code int) {
 		Error: err,
 	}
 	_ = json.NewEncoder(w).Encode(resp)
+}
+
+// Favicon handler
+func (s *handler) handlerFavicon(w http.ResponseWriter, _ *http.Request) {
+	w.Header().Set("Content-Type", "image/x-icon")
+	w.Header().Set("Cache-Control", "public, max-age=7776000")
+	fv, _ := base64.StdEncoding.DecodeString(favicon)
+	_, _ = w.Write(fv)
 }

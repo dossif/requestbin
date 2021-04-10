@@ -31,6 +31,7 @@ func Server(osSignalChan chan bool) {
 	h := handler{Service: service}
 	router := mux.NewRouter()
 	router.Use(mw.commonMiddleware)
+	router.HandleFunc("/favicon.ico", h.handlerFavicon)
 	router.HandleFunc("/", h.handlerRequestStatus)
 	router.HandleFunc("/{status}", h.handlerRequestStatus)
 	http.Handle("/", router)
@@ -42,7 +43,10 @@ func Server(osSignalChan chan bool) {
 		Handler:      router,
 	}
 	go func() {
-		_ = server.ListenAndServe()
+		err := server.ListenAndServe()
+		if err != nil {
+			log.Fatalf("failed to start http server: %v", err)
+		}
 	}()
 	<-osSignalChan
 	ctx, cancel := context.WithTimeout(context.Background(), exitTimeout)
