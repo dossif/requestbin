@@ -2,7 +2,7 @@
 
 Build:
 
-    go build -o requestbin src/main/main.go
+    go build -o requestbin ./src/main
 
 Run:
 
