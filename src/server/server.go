@@ -26,7 +26,7 @@ func Server(osSignalChan chan bool) {
 	service := config.Service
 	defer service.WaitGroup.Done()
 	log := service.Log
-	log.Infof("start http")
+	log.Infof("start http server")
 	mw := middleware{Service: service}
 	h := handler{Service: service}
 	router := mux.NewRouter()
@@ -43,10 +43,7 @@ func Server(osSignalChan chan bool) {
 		Handler:      router,
 	}
 	go func() {
-		err := server.ListenAndServe()
-		if err != nil {
-			log.Fatalf("failed to start http server: %v", err)
-		}
+		_ = server.ListenAndServe()
 	}()
 	<-osSignalChan
 	ctx, cancel := context.WithTimeout(context.Background(), exitTimeout)
@@ -55,7 +52,7 @@ func Server(osSignalChan chan bool) {
 	if err != nil {
 		log.Errorf("failed to shutdown http server")
 	}
-	defer log.Infof("stop http")
+	defer log.Infof("stop http server")
 }
 
 // For common requests

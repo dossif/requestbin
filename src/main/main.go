@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
@@ -12,7 +11,9 @@ import (
 	"syscall"
 )
 
-const appLogo = "RequestBin"
+const appName = "requestbin"
+
+var AppVersion = "_not_set_"
 
 // Handle OS signals
 func setOsSignalHandler(log *logrus.Entry, osSignalChan chan bool) {
@@ -38,12 +39,11 @@ func initLogger() *logrus.Logger {
 
 // Main
 func main() {
-	fmt.Println(appLogo)
 	listen, ok := os.LookupEnv("RB_LISTEN")
 	if ok != true {
 		listen = "0.0.0.0:8080"
 	}
-	log := initLogger().WithField("app", strings.ToLower(appLogo))
+	log := initLogger().WithField("app", strings.ToLower(appName))
 	osSignalChan := make(chan bool)
 	setOsSignalHandler(log, osSignalChan)
 	var waitGroup sync.WaitGroup
@@ -53,10 +53,10 @@ func main() {
 		Log:       log,
 	}
 	config.Service = service
-	fmt.Println(fmt.Sprintf("listen: %v", service.Listen))
+	log.Infof("start %v:%v on %v", appName, AppVersion, listen)
 	go server.Server(osSignalChan)
 	waitGroup.Add(1)
 	waitGroup.Wait()
-	log.Info("stop app")
+	log.Infof("stop %v", appName)
 	os.Exit(0)
 }
