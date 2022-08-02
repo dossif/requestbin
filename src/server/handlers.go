@@ -8,16 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"strings"
 )
-
-// Split full-address to address and port
-func splitAddrPort(host string) (addr string, port int) {
-	lastInd := strings.LastIndex(host, ":")
-	addr = host[:lastInd]
-	port, _ = strconv.Atoi(host[lastInd+1:])
-	return
-}
 
 // Request Status Handler
 func (s *handler) handlerRequestStatus(w http.ResponseWriter, r *http.Request) {
@@ -41,15 +32,17 @@ func (s *handler) handlerRequestStatus(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(httpStatusInt)
 	body, _ := ioutil.ReadAll(r.Body)
-	dstHost, dstPort := splitAddrPort(r.Host)
-	rmIp, rmPort := splitAddrPort(r.RemoteAddr)
-
 	type Request struct {
-		Ip      string
-		Port    int
-		Method  string
-		Body    string
-		Headers http.Header
+		RemoteAddr    string
+		Method        string
+		Host          string
+		Proto         string
+		Url           string
+		ReqURI        string
+		ContentLength int64
+		Trailer       http.Header
+		Body          string
+		Headers       http.Header
 	}
 	type Response struct {
 		Status  int
@@ -58,44 +51,27 @@ func (s *handler) handlerRequestStatus(w http.ResponseWriter, r *http.Request) {
 	type RequestStatus struct {
 		Request  Request
 		Response Response
-		Host     string
-		Port     int
-		Proto    string
 	}
 	respJson := RequestStatus{
 		Request: Request{
-			Method:  r.Method,
-			Ip:      rmIp,
-			Port:    rmPort,
-			Body:    string(body),
-			Headers: r.Header,
+			Method:        r.Method,
+			RemoteAddr:    r.RemoteAddr,
+			Host:          r.Host,
+			Proto:         r.Proto,
+			Url:           r.URL.String(),
+			ReqURI:        r.RequestURI,
+			Trailer:       r.Trailer,
+			Body:          string(body),
+			Headers:       r.Header,
+			ContentLength: r.ContentLength,
 		},
 		Response: Response{
 			Status:  httpStatusInt,
 			Headers: w.Header(),
 		},
-		Host:  dstHost,
-		Port:  dstPort,
-		Proto: r.Proto,
 	}
 	resp, _ := json.MarshalIndent(respJson, "", "  ")
 	_, _ = w.Write(resp)
-}
-
-// Error 404 handler
-func (s *handler) handlerNotFound(w http.ResponseWriter, r *http.Request) {
-	log := s.Service.Log
-	errMsg := fmt.Sprintf("failed to get resource: %v", r.RequestURI)
-	log.Warn(errMsg)
-	jsonError(w, errMsg, 404)
-}
-
-// Error 405 handler
-func (s *handler) handlerMethodNotAllowed(w http.ResponseWriter, r *http.Request) {
-	log := s.Service.Log.WithField("service", "rest")
-	errMsg := fmt.Sprintf("method %v not allowed", r.Method)
-	log.Warn(errMsg)
-	jsonError(w, errMsg, 405)
 }
 
 // Json-formatted error handler

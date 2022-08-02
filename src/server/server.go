@@ -32,8 +32,8 @@ func Server(osSignalChan chan bool) {
 	router := mux.NewRouter()
 	router.Use(mw.commonMiddleware)
 	router.HandleFunc("/favicon.ico", h.handlerFavicon)
-	router.HandleFunc("/", h.handlerRequestStatus)
-	router.HandleFunc("/{status}", h.handlerRequestStatus)
+	router.HandleFunc("/status/{status}", h.handlerRequestStatus)
+	router.PathPrefix("/").HandlerFunc(h.handlerRequestStatus)
 	http.Handle("/", router)
 	server := &http.Server{
 		Addr:         service.Listen,
