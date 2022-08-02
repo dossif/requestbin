@@ -5,7 +5,7 @@ env:
   OS: linux
   ARCH: amd64
   TAG: 0.0.1
-  DOCKERHUB_ROOT: dossif
+  DH_ROOT: dossif
 jobs:
   Compile:
     runs-on: ubuntu-20.04
@@ -33,4 +33,4 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: ${DOCKERHUB_ROOT}/${APP}:${TAG}
+          tags: ${{ env.DH_ROOT }}/${{ env.APP }}:${{ env.TAG }}
