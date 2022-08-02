@@ -17,9 +17,17 @@ jobs:
           go-version: 1.17
       - name: Compile binary
         run: GOOS=${OS} GOARCH=${ARCH} go build -ldflags "-X main.AppVersion=${TAG}" -o "${APP}" ./src/main
+      - uses: actions/upload-artifact@v2
+        with:
+          name: requestbin
+          path: /requestbin
   Build:
     runs-on: ubuntu-20.04
     steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: requestbin
+          path: /requestbin
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
