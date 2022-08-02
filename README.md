@@ -1,6 +1,6 @@
 # RequestBin
 
-Build:
+Compile:
 
     go build -o requestbin ./src/main
 
@@ -11,6 +11,11 @@ Run:
 Docker compose:
 
     docker-compose -f docker-compose.yml up --build
+
+Docker hub:
+
+    # https://hub.docker.com/r/dossif/requestbin
+    docker run dossif/requestbin:latest
 
 Usage:
 
