@@ -23,6 +23,7 @@ jobs:
           name: binary
           path: ./requestbin
   Build:
+    needs: Compile
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/download-artifact@v2
