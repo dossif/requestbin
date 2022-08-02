@@ -1,5 +1,4 @@
 FROM alpine:3.13
-
-ADD ./requestbin /
+COPY requestbin /requestbin
 EXPOSE 8080
-ENTRYPOINT ["./requestbin"]
+ENTRYPOINT ["/requestbin"]
