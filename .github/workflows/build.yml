@@ -39,6 +39,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASS }}
+      - run: pwd; ls -lahtr
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
