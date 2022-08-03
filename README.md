@@ -1,21 +1,21 @@
 # RequestBin
 
+Docker image: https://hub.docker.com/r/dossif/requestbin
+
 Compile:
 
     go build -o requestbin ./src/main
+
 
 Run:
 
     env RB_LISTEN="localhost:8080" ./requestbin
 
+
 Docker compose:
 
     docker-compose -f docker-compose.yml up --build
 
-Docker hub:
-
-    # https://hub.docker.com/r/dossif/requestbin
-    docker run dossif/requestbin:latest
 
 Usage:
 

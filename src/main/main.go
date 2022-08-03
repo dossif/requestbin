@@ -13,7 +13,7 @@ import (
 
 const appName = "requestbin"
 
-var AppVersion = "_not_set_"
+var AppVersion = "0.0.0"
 
 // Handle OS signals
 func setOsSignalHandler(log *logrus.Entry, osSignalChan chan bool) {
