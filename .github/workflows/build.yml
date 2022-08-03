@@ -1,15 +1,20 @@
 name: Build
-on: [push]
+on:
+  push:
+    tags:
+      - 'v*.*.*'
 env:
   APP: requestbin
   OS: linux
   ARCH: amd64
-  TAG: 0.0.1
+  VER: 0.0.1
   DH_ROOT: dossif
 jobs:
   Compile:
     runs-on: ubuntu-20.04
     steps:
+      - name: Get release version from git tag
+        run: echo "VER=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: Git checkout
         uses: actions/checkout@v2
       - name: Set up Go
@@ -17,7 +22,7 @@ jobs:
         with:
           go-version: 1.17
       - name: Compile binary
-        run: GOOS=${OS} GOARCH=${ARCH} go build -ldflags "-X main.AppVersion=${TAG}" -o "${APP}" ./src/main
+        run: GOOS=${OS} GOARCH=${ARCH} go build -ldflags "-X main.AppVersion=${VER}" -o "${APP}" ./src/main
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
@@ -46,7 +51,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.DH_ROOT }}/${{ env.APP }}:${{ env.TAG }}
+          tags: ${{ env.DH_ROOT }}/${{ env.APP }}:${{ env.VER }}
   Release:
     needs: Compile
     runs-on: ubuntu-20.04
@@ -59,6 +64,6 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          name: "v${{ env.TAG }}"
-          tag_name: "v${{ env.TAG }}"
-          files: ./requestbin
+          name: "v${{ env.VER }}"
+          VER_name: "v${{ env.VER }}"
+          files: ./${{ env.APP }}
