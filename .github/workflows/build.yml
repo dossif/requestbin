@@ -42,7 +42,7 @@ jobs:
         with:
           name: dockerfile
           path: ./Dockerfile
-  Build:
+  Dockerimage:
     needs: Compile
     runs-on: ubuntu-20.04
     steps:
@@ -67,6 +67,6 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: $GITHUB_ACTION_PATH
           push: true
           tags: ${{ env.DH_ROOT }}/${{ env.APP }}:${{ env.TAG }}
