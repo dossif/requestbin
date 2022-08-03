@@ -10,7 +10,8 @@ jobs:
   Compile:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - name: Git checkout
+        uses: actions/checkout@v2
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
@@ -34,24 +35,23 @@ jobs:
 #          context: .
 #          push: true
 #          tags: ${{ env.DH_ROOT }}/${{ env.APP }}:${{ env.TAG }}
-      - uses: actions/upload-artifact@v2
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
         with:
           name: binary
           path: ./requestbin
-      - uses: actions/upload-artifact@v2
-        with:
-          name: dockerfile
-          path: ./Dockerfile
+#      - uses: actions/upload-artifact@v2
+#        with:
+#          name: dockerfile
+#          path: ./Dockerfile
   Dockerimage:
     needs: Compile
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/download-artifact@v2
-        with:
-          name: dockerfile
-          path: ./Dockerfile
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+      - name: Git checkout
+        uses: actions/checkout@v2
+#      - name: Set up QEMU
+#        uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Login to DockerHub
@@ -59,14 +59,19 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASS }}
-      - uses: actions/download-artifact@v2
-        with:
-          name: binary
-          path: ./requestbin
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+#        with:
+#          name: binary
+#          path: ./requestbin
+#      - uses: actions/download-artifact@v2
+#        with:
+#          name: dockerfile
+#          path: ./Dockerfile
       - run: pwd; ls -lahtr; echo ${{ env.GITHUB_ACTION_PATH }}
       - name: Build and push
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v2
         with:
-          context: ${{ env.GITHUB_ACTION_PATH }}
+          context: .
           push: true
           tags: ${{ env.DH_ROOT }}/${{ env.APP }}:${{ env.TAG }}
