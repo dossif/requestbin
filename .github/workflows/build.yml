@@ -67,6 +67,6 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          context: $GITHUB_ACTION_PATH
+          context: ${{ env.GITHUB_ACTION_PATH }}
           push: true
           tags: ${{ env.DH_ROOT }}/${{ env.APP }}:${{ env.TAG }}
