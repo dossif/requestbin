@@ -63,7 +63,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASS }}
-      - run: pwd; ls -lahtr
+      - run: pwd; ls -lahtr; echo ${{ env.GITHUB_ACTION_PATH }}
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
