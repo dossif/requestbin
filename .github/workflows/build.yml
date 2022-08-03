@@ -18,18 +18,6 @@ jobs:
       - name: Compile binary
         run: GOOS=${OS} GOARCH=${ARCH} go build -ldflags "-X main.AppVersion=${TAG}" -o "${APP}" ./src/main
       - run: pwd; ls -lahtr
-      - uses: actions/upload-artifact@v2
-        with:
-          name: binary
-          path: ./requestbin
-  Build:
-    needs: Compile
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/download-artifact@v2
-        with:
-          name: binary
-          path: ./requestbin
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
@@ -45,3 +33,30 @@ jobs:
         with:
           push: true
           tags: ${{ env.DH_ROOT }}/${{ env.APP }}:${{ env.TAG }}
+#      - uses: actions/upload-artifact@v2
+#        with:
+#          name: binary
+#          path: ./requestbin
+#  Build:
+#    needs: Compile
+#    runs-on: ubuntu-20.04
+#    steps:
+#      - uses: actions/download-artifact@v2
+#        with:
+#          name: binary
+#          path: ./requestbin
+#      - name: Set up QEMU
+#        uses: docker/setup-qemu-action@v2
+#      - name: Set up Docker Buildx
+#        uses: docker/setup-buildx-action@v2
+#      - name: Login to DockerHub
+#        uses: docker/login-action@v2
+#        with:
+#          username: ${{ secrets.DOCKERHUB_USER }}
+#          password: ${{ secrets.DOCKERHUB_PASS }}
+#      - run: pwd; ls -lahtr
+#      - name: Build and push
+#        uses: docker/build-push-action@v3
+#        with:
+#          push: true
+#          tags: ${{ env.DH_ROOT }}/${{ env.APP }}:${{ env.TAG }}

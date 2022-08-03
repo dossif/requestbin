@@ -38,7 +38,7 @@ func (s *handler) handlerRequestStatus(w http.ResponseWriter, r *http.Request) {
 		Host          string
 		Proto         string
 		Url           string
-		ReqURI        string
+		RequestURI    string
 		ContentLength int64
 		Trailer       http.Header
 		Body          string
@@ -59,7 +59,7 @@ func (s *handler) handlerRequestStatus(w http.ResponseWriter, r *http.Request) {
 			Host:          r.Host,
 			Proto:         r.Proto,
 			Url:           r.URL.String(),
-			ReqURI:        r.RequestURI,
+			RequestURI:    r.RequestURI,
 			Trailer:       r.Trailer,
 			Body:          string(body),
 			Headers:       r.Header,
