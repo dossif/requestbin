@@ -7,14 +7,17 @@ env:
   APP: requestbin
   OS: linux
   ARCH: amd64
-  VER: 0.0.1
   DH_ROOT: dossif
 jobs:
-  Compile:
+  Prepare:
     runs-on: ubuntu-20.04
     steps:
       - name: Get release version from git tag
-        run: echo "VER=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+        run: echo "VER=${GITHUB_REF_NAME#refs/*/v}" >> $GITHUB_ENV
+  Compile:
+    runs-on: ubuntu-20.04
+    needs: Prepare
+    steps:
       - name: Git checkout
         uses: actions/checkout@v2
       - name: Set up Go
@@ -65,5 +68,5 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           name: "v${{ env.VER }}"
-          VER_name: "v${{ env.VER }}"
+          tag_name: "v${{ env.VER }}"
           files: ./${{ env.APP }}
