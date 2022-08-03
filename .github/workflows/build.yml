@@ -48,10 +48,6 @@ jobs:
     steps:
       - uses: actions/download-artifact@v2
         with:
-          name: binary
-          path: ./requestbin
-      - uses: actions/download-artifact@v2
-        with:
           name: dockerfile
           path: ./Dockerfile
       - name: Set up QEMU
@@ -63,6 +59,10 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASS }}
+      - uses: actions/download-artifact@v2
+        with:
+          name: binary
+          path: ./requestbin
       - run: pwd; ls -lahtr; echo ${{ env.GITHUB_ACTION_PATH }}
       - name: Build and push
         uses: docker/build-push-action@v3
