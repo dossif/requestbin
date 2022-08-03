@@ -37,9 +37,11 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: binary
-          path: |
-            ./requestbin
-            ./Dockerfile
+          path: ./requestbin
+      - uses: actions/upload-artifact@v2
+        with:
+          name: dockerfile
+          path: ./Dockerfile
   Build:
     needs: Compile
     runs-on: ubuntu-20.04
@@ -47,9 +49,11 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: binary
-          path: |
-            ./requestbin
-            ./Dockerfile
+          path: ./requestbin
+      - uses: actions/download-artifact@v2
+        with:
+          name: dockerfile
+          path: ./Dockerfile
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
