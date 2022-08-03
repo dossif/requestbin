@@ -18,32 +18,11 @@ jobs:
           go-version: 1.17
       - name: Compile binary
         run: GOOS=${OS} GOARCH=${ARCH} go build -ldflags "-X main.AppVersion=${TAG}" -o "${APP}" ./src/main
-      - run: pwd; ls -lahtr
-#      - name: Set up QEMU
-#        uses: docker/setup-qemu-action@v2
-#      - name: Set up Docker Buildx
-#        uses: docker/setup-buildx-action@v2
-#      - name: Login to DockerHub
-#        uses: docker/login-action@v2
-#        with:
-#          username: ${{ secrets.DOCKERHUB_USER }}
-#          password: ${{ secrets.DOCKERHUB_PASS }}
-#      - run: pwd; ls -lahtr
-#      - name: Build and push
-#        uses: docker/build-push-action@v2
-#        with:
-#          context: .
-#          push: true
-#          tags: ${{ env.DH_ROOT }}/${{ env.APP }}:${{ env.TAG }}
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: binary
           path: ./requestbin
-#      - uses: actions/upload-artifact@v2
-#        with:
-#          name: dockerfile
-#          path: ./Dockerfile
   Dockerimage:
     needs: Compile
     runs-on: ubuntu-20.04
@@ -61,13 +40,9 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASS }}
       - name: Download artifacts
         uses: actions/download-artifact@v2
-#        with:
-#          name: binary
-#          path: ./requestbin
-#      - uses: actions/download-artifact@v2
-#        with:
-#          name: dockerfile
-#          path: ./Dockerfile
+        with:
+          name: binary
+          path: .
       - run: pwd; ls -lahtr; echo ${{ env.GITHUB_ACTION_PATH }}
       - name: Build and push
         uses: docker/build-push-action@v2
