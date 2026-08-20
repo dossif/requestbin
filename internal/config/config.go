@@ -1,13 +1,13 @@
 package config
 
 import (
-	"github.com/sirupsen/logrus"
+	"log/slog"
 	"sync"
 )
 
 type Config struct {
 	Listen    string
-	Log       *logrus.Entry
+	Log       *slog.Logger
 	WaitGroup *sync.WaitGroup
 }
 

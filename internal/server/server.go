@@ -2,10 +2,8 @@ package server
 
 import (
 	"context"
-	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
+	"github.com/dossif/requestbin/internal/config"
 	"net/http"
-	"requestbin/src/config"
 	"time"
 )
 
@@ -26,15 +24,14 @@ func Server(osSignalChan chan bool) {
 	service := config.Service
 	defer service.WaitGroup.Done()
 	log := service.Log
-	log.Infof("start http server")
+	log.Info("start http server")
 	mw := middleware{Service: service}
 	h := handler{Service: service}
-	router := mux.NewRouter()
-	router.Use(mw.commonMiddleware)
-	router.HandleFunc("/favicon.ico", h.handlerFavicon)
-	router.HandleFunc("/status/{status}", h.handlerRequestStatus)
-	router.PathPrefix("/").HandlerFunc(h.handlerRequestStatus)
-	http.Handle("/", router)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/favicon.ico", h.handlerFavicon)
+	mux.HandleFunc("/status/{status}", h.handlerRequestStatus)
+	mux.HandleFunc("/", h.handlerRequestStatus)
+	router := mw.commonMiddleware(mux)
 	server := &http.Server{
 		Addr:         service.Listen,
 		WriteTimeout: time.Second * 5,
@@ -42,17 +39,23 @@ func Server(osSignalChan chan bool) {
 		IdleTimeout:  time.Second * 5,
 		Handler:      router,
 	}
+	serveErrChan := make(chan error, 1)
 	go func() {
-		_ = server.ListenAndServe()
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			serveErrChan <- err
+		}
 	}()
-	<-osSignalChan
+	select {
+	case <-osSignalChan:
+	case err := <-serveErrChan:
+		log.Error("http server failed to start", "error", err)
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), exitTimeout)
 	defer cancel()
-	err := server.Shutdown(ctx)
-	if err != nil {
-		log.Errorf("failed to shutdown http server")
+	if err := server.Shutdown(ctx); err != nil {
+		log.Error("failed to shutdown http server", "error", err)
 	}
-	defer log.Infof("stop http server")
+	log.Info("stop http server")
 }
 
 // For common requests
@@ -60,8 +63,7 @@ func (s *middleware) commonMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		log := s.Service.Log
-		logFields := logrus.Fields{"remote": r.RemoteAddr, "method": r.Method, "uri": r.RequestURI, "host": r.Host}
-		log.WithFields(logFields).Info("http-request")
+		log.Info("http-request", "remote", r.RemoteAddr, "method", r.Method, "uri", r.RequestURI, "host", r.Host)
 		next.ServeHTTP(w, r)
 	})
 }

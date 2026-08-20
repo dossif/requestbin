@@ -1,6 +1,5 @@
-version: "2.0"
 services:
   web:
-    image: dossif/requestbin
+    image: dossif/requestbin:latest
     ports:
       - "8080:8080"
